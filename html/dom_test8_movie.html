@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <button class="add">추가</button>
+    <ul class="list"></ul>
+    <script>
+
+        // 리스트 항목 가져오기 
+        const list = document.querySelector('.list');
+        
+        // 영화목록 읽어오기 
+        async function fetchMovieData(url) {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error('요청에 실패. 상태코드 : ' + response.status);
+            }
+            const data = await response.json();
+            return data; 
+        }
+
+        // 영화목록 체크 
+        function validateMovieData(data) {
+            if (!data) {
+                throw new Error('데이터가 없습니다.');
+            }
+            if (!data.articleList || data.articleList.length === 0) {
+                throw new Error('데이타가 없습니다.');
+            }
+        }
+
+        // 영화목록 랭킹 메기기 
+        function extractMovieInfos(articleList) {
+            return articleList.map((article, idx) => 
+                ({ title: article.title, rank: idx + 1 })
+            );
+        }
+
+        // 영화목록 화면에 ADD 
+        function displayMovies(movieInfos) {
+            for (const movie of movieInfos) {
+                const li = document.createElement('li');
+                li.textContent = `[${movie.rank}위] ${movie.title}`;
+                list.appendChild(li);  
+            }
+        }
+
+        const url = 'http://raw.githubusercontent.com/wapj/jsbackend/main/movieinfo.json';
+
+        async function movies() {
+            try {
+                const data = await fetchMovieData(url);
+                validateMovieData(data);
+                const movieInfos = extractMovieInfos(data.articleList);
+                displayMovies(movieInfos);
+            } catch (err) {
+                console.error('에러 발생: ', err.message);
+            }
+        }
+
+        const btn = document.querySelector('.add');
+        btn.addEventListener('click', () => {
+            movies();
+            btn.disabled = true;
+        })
+
+
+    </script>
+</body>
+</html>
